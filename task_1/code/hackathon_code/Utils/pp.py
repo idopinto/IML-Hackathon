@@ -28,11 +28,13 @@ def preprocess(df):
                          df['request_highfloor'] + df['request_twinbeds'] + df['request_earlycheckin'] +
                          df['request_largebed'])
 
+
     df["did_cancel"] = ~df["cancellation_datetime"].isna()
     df["distance_booking_checkin"] = ((df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)).astype(
         float)
     df["amount_guests"] = df["no_of_adults"] + df["no_of_children"]
     df["amount_nights"] = ((df["checkout_date"] - df["checkin_date"]) / pd.Timedelta(days=1)).astype(float)
+    df["hotel_live_date"] = ((df["checkin_date"] - df["hotel_live_date"]) / pd.Timedelta(days=1)).astype(float)
     df["checkin_date"] = df["checkin_date"].dt.dayofyear
     df["checkout_date"] = df["checkout_date"].dt.dayofyear
     df["booking_datetime"] = df["booking_datetime"].dt.dayofyear
@@ -41,9 +43,14 @@ def preprocess(df):
                                        (df["customer_nationality"] == df['origin_country_code'])
 
     df['origin_country_code'] = encoder.fit_transform(df['origin_country_code']).astype(float)
+    df['guest_nationality_country_name'] = encoder.fit_transform(df['guest_nationality_country_name']).astype(float)
+    df['customer_nationality'] = encoder.fit_transform(df['customer_nationality']).astype(float)
+    df['original_payment_method'] = encoder.fit_transform(df['original_payment_method']).astype(float)
+    df['original_payment_type'] = encoder.fit_transform(df['original_payment_type']).astype(float)
 
     df["pay_now"] = df["charge_option"] == "Pay Now"
     y = df["did_cancel"]
     df = df.drop(["did_cancel", "h_customer_id", "cancellation_datetime",
                   "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
     return df, y
+df['original_payment_currency'] = encoder.fit_transform(df['original_payment_currency']).astype(float)
