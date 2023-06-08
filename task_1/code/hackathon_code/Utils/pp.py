@@ -21,7 +21,7 @@ def preprocess(df):
     df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
     df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
 
-    df['cancellation_policy_code1'] = df['cancellation_policy_code'].apply(
+    df['cancellation_policy_code'] = df['cancellation_policy_code'].apply(
         lambda x: re.findall(r'(\d+)D', x)[0] if re.findall(r'(\d+)D', x) else 0).astype(float)
 
     df["has_request"] = (df['request_nonesmoke'] + df['request_airport'] + df['request_latecheckin'] +
