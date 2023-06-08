@@ -19,7 +19,11 @@ def preprocess(df):
     df['request_largebed'] = df['request_largebed'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
     df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
     df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
-    # df['hotel_country_code'] = df['hotel_country_code'].apply(lambda x: x if x >= 0 else -1)
+
+    df["cancellation_policy_code"] = df["cancellation_policy_code"].apply(lambda x: 0 if x.startswith("365D") else x)
+    df["cancellation_policy_code"] = df["cancellation_policy_code"].apply(
+        lambda x: 2 if x != 0 and (x.startswith("1D") or x.startswith("0D")) else x)
+    df["cancellation_policy_code"] = df["cancellation_policy_code"].apply(lambda x: x if x == 2 or x == 0 else 1)
 
     df["has_request"] = (df['request_nonesmoke'] + df['request_airport'] + df['request_latecheckin'] +
                          df['request_highfloor'] + df['request_twinbeds'] + df['request_earlycheckin'] +
