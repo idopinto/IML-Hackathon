@@ -4,7 +4,6 @@ from matplotlib import pyplot as plt
 # from task_1.code.pp import preprocess
 from sklearn.preprocessing import LabelEncoder
 
-
 def preprocess(df):
     encoder = LabelEncoder()
 
@@ -44,7 +43,7 @@ def preprocess(df):
     df = df.drop(["h_booking_id", "did_cancel", "h_customer_id", "request_nonesmoke", "request_airport"], axis=1)
     return df, y
 
-
+# df['name_match'] = df['first_name'].apply(lambda x: 'Match' if x == 'Bill' else 'Mismatch')
 if __name__ == '__main__':
     filename = "../Datasets/train_set_agoda.csv"
 
@@ -60,5 +59,5 @@ if __name__ == '__main__':
     # print(X["distance_booking_checkin"] < 0)
     # print(y)
     # print(X2[["hotel_country_code", "hotel_id", "hotel_city_code"]])
-    print(X['language'])
+    print(X['request_latecheckin'])
 
