@@ -125,10 +125,34 @@ def main():
     X, y = pp.preprocess(df)
     features = X.select_dtypes(include=['float64', 'int64','boolean']).columns
     X = X[features]
+
+    # model_selection(classifiers,names, params, X, y)
+    param_grid = {
+        'max_depth': [10],
+        'learning_rate': [0.04],
+        'n_estimators': [100],
+        'gamma': [0.2],
+        'subsample': [0.8],
+        'colsample_bytree': [0.8],
+        'reg_alpha': [0.5],
+        'reg_lambda': [0.5],
+    }
+    best_params, best_score, f1 = find_best_params_xgboost(X,y,param_grid)
+    print("best params: ", best_params)
+    print("best score: ", best_score)
+    print("F1: ", f1)
+
+
+if __name__ == '__main__':
+    df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
+    main()
+
+
+
     # run_baseline(X, y)
     # run_lightGBN(X, y)
     # ------------------------------
-    classifiers = [LogisticRegression(), KNeighborsClassifier(),RandomForestClassifier()]
+    # classifiers = [LogisticRegression(), KNeighborsClassifier(),RandomForestClassifier()]
     # names = ["Logistic Regression", "KNN", "Random Forest"]
     # scoring = ['accuracy', 'precision_macro', 'recall_macro', 'f1_macro']
     # evaluate_different_models_cv(classfiers,names,scoring)
@@ -155,23 +179,3 @@ def main():
     #     'class_weight': ['balanced'],
     # }
     # params = [logreg_param_grid,knn_param_grid, rf_grid]
-    # model_selection(classifiers,names, params, X, y)
-    param_grid = {
-        'max_depth': [10],
-        'learning_rate': [0.04],
-        'n_estimators': [100],
-        'gamma': [0.2],
-        'subsample': [0.8],
-        'colsample_bytree': [0.8],
-        'reg_alpha': [0.5],
-        'reg_lambda': [0.5],
-    }
-    best_params, best_score, f1 = find_best_params_xgboost(X,y,param_grid)
-    print("best params: ", best_params)
-    print("best score: ", best_score)
-    print("F1: ", f1)
-
-
-if __name__ == '__main__':
-    df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
-    main()
