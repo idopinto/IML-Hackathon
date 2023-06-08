@@ -19,6 +19,7 @@ def preprocess(df):
     df['request_largebed'] = df['request_largebed'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
     df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
     df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
+    # df['hotel_country_code'] = df['hotel_country_code'].apply(lambda x: x if x >= 0 else -1)
 
     df["has_request"] = (df['request_nonesmoke'] + df['request_airport'] + df['request_latecheckin'] +
                          df['request_highfloor'] + df['request_twinbeds'] + df['request_earlycheckin'] +
@@ -34,6 +35,10 @@ def preprocess(df):
     df["booking_datetime"] = df["booking_datetime"].dt.dayofyear
     df["price_per_guest_per_night"] = df["original_selling_amount"] / (df["amount_guests"] * df["amount_nights"])
     df["costumer_guest_same_nation"] = df["customer_nationality"] == df["guest_nationality_country_name"]
+    df[""] = df['hotel_country_code'] == df['hotel_country_code'] == df['origin_country_code']
+
+    df['origin_country_code'] = encoder.fit_transform(df['origin_country_code']).astype(float)
+
     df["pay_now"] = df["charge_option"] == "Pay Now"
     y = df["did_cancel"]
     df = df.drop(["did_cancel", "h_customer_id", "cancellation_datetime",
