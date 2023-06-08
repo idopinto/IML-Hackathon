@@ -34,8 +34,8 @@ def preprocess(df):
     df["checkout_date"] = df["checkout_date"].dt.dayofyear
     df["booking_datetime"] = df["booking_datetime"].dt.dayofyear
     df["price_per_guest_per_night"] = df["original_selling_amount"] / (df["amount_guests"] * df["amount_nights"])
-    df["costumer_guest_same_nation"] = df["customer_nationality"] == df["guest_nationality_country_name"]
-    df[""] = df['hotel_country_code'] == df['hotel_country_code'] == df['origin_country_code']
+    df["costumer_guest_same_nation"] = (df["customer_nationality"] == df["guest_nationality_country_name"]) == \
+                                       (df["customer_nationality"] == df['origin_country_code'])
 
     df['origin_country_code'] = encoder.fit_transform(df['origin_country_code']).astype(float)
 
