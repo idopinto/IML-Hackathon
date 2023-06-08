@@ -1,7 +1,6 @@
 from sklearn.ensemble import RandomForestClassifier
 from ydata_profiling import ProfileReport
 
-from . import pp
 from ..Base import baseline
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score
@@ -36,7 +35,11 @@ def pipeline(X,y):
 
 from datetime import datetime
 
-def cancellation_cost(cancellation_policy, cancellation_date, checkin_date, order_cost, num_nights):
+def cancellation_cost(cancellation_policy,
+                      cancellation_date,
+                      checkin_date,
+                      order_cost,
+                      num_nights):
     cancellation_date = datetime.strptime(cancellation_date, "%Y-%m-%d")
     checkin_date = datetime.strptime(checkin_date, "%Y-%m-%d")
     days_until_checkin = (checkin_date - cancellation_date).days
