@@ -10,20 +10,19 @@ def preprocess(df):
     df['hotel_country_code'] = encoder.fit_transform(df['hotel_country_code']).astype(float)
     df["accommadation_type_name"] = encoder.fit_transform(df["accommadation_type_name"]).astype(float)
 
-    df['request_nonesmoke'] = df['request_nonesmoke'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
-    df['request_airport'] = df['request_airport'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
-    df['request_latecheckin'] = df['request_latecheckin'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
-    df['request_highfloor'] = df['request_highfloor'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
-    df['request_twinbeds'] = df['request_twinbeds'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
-    df['request_earlycheckin'] = df['request_earlycheckin'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
-    df['request_largebed'] = df['request_largebed'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
+    df['request_nonesmoke'] = df['request_nonesmoke'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
+    df['request_airport'] = df['request_airport'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
+    df['request_latecheckin'] = df['request_latecheckin'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
+    df['request_highfloor'] = df['request_highfloor'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
+    df['request_twinbeds'] = df['request_twinbeds'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
+    df['request_earlycheckin'] = df['request_earlycheckin'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
+    df['request_largebed'] = df['request_largebed'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
     df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
     df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
 
-    # df["has_request"] = (df['request_nonesmoke'] == 1) or (df['request_airport'] == 1) or \
-    #                     (df['request_latecheckin'] == 1) or (df['request_highfloor'] == 1) or \
-    #                     (df['request_twinbeds'] == 1) or (df['request_earlycheckin'] == 1) or \
-    #                     (df['request_largebed'] == 1)
+    df["has_request"] = (df['request_nonesmoke'] + df['request_airport'] + df['request_latecheckin'] +
+                         df['request_highfloor'] + df['request_twinbeds'] + df['request_earlycheckin'] +
+                         df['request_largebed'])
 
     df["did_cancel"] = ~df["cancellation_datetime"].isna()
     df["distance_booking_checkin"] = ((df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)).astype(
@@ -38,5 +37,5 @@ def preprocess(df):
     df["pay_now"] = df["charge_option"] == "Pay Now"
     y = df["did_cancel"]
     df = df.drop(["h_booking_id", "did_cancel", "h_customer_id", "cancellation_datetime",
-                  "hotel_brand_code", "hotel_chain_code"], axis=1)
+                  "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
     return df, y
