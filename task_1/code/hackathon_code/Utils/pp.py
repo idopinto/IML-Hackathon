@@ -27,9 +27,9 @@ def preprocess(df):
                         (df['request_largebed'] == 1)
 
     df["did_cancel"] = ~df["cancellation_datetime"].isna()
-    df["distance_booking_checkin"] = ((df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)).astype(int)
+    df["distance_booking_checkin"] = ((df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)).astype(float)
     df["amount_guests"] = df["no_of_adults"] + df["no_of_children"]
-    df["amount_nights"] = ((df["checkout_date"] - df["checkin_date"]) / pd.Timedelta(days=1)).astype(int)
+    df["amount_nights"] = ((df["checkout_date"] - df["checkin_date"]) / pd.Timedelta(days=1)).astype(float)
     df["checkin_date"] = df["checkin_date"].dt.dayofyear
     df["checkout_date"] = df["checkout_date"].dt.dayofyear
     df["booking_datetime"] = df["booking_datetime"].dt.dayofyear
