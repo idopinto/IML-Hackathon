@@ -5,7 +5,7 @@ from hackathon_code.Base import baseline
 import pandas as pd
 from task_1.code.hackathon_code.Utils import utils, pp
 # from hackathon_code.models import model
-
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 
 import lightgbm as lgb
 from sklearn.linear_model import LogisticRegression
@@ -80,22 +80,60 @@ def run_baseline(X,y):
           f"\t F1: {f1}\n"
           f"--------------------------------------\n")
 
+def model_selection(models,names,params_grids, X,y,scoring='f1'):
+    # GridSearchCV
+    for i, model in enumerate(models):
+        grid_search = GridSearchCV(model, params_grids[i], cv=5, scoring=scoring)
+
+        grid_search.fit(X, y)
+        # Print the best parameters and the corresponding mean cross-validated score
+
+        print(f"GridSearchCV for {names[i]}- Best Parameters:", grid_search.best_params_)
+        print(f"GridSearchCV for {names[i]} - Best F1 Score:", grid_search.best_score_)
+        print("--------------------------------------------")
+
+
 if __name__ == '__main__':
     df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
     # features = ['pay_now', 'hotel_id', 'language', 'hotel_star_rating',"distance_booking_checkin"]
 
     # preprocessing
     X, y = pp.preprocess(df)
-    features = X.select_dtypes(include=['float64', 'int64']).columns
+    features = X.select_dtypes(include=['float64', 'int64','boolean']).columns
     X = X[features]
-
-    run_baseline(X, y)
-    run_lightGBN(X, y)
-
+    # print(X.columns)
+    # print(X.shape)
+    # run_baseline(X, y)
+    # # run_lightGBN(X, y)
     # ------------------------------
-    classfiers = [LogisticRegression(),
-              KNeighborsClassifier(n_neighbors=5),
-              RandomForestClassifier(n_estimators=100, random_state=42)]
-    names = ["Logistic Regression", "KNN", "Random Forest"]
+    classifiers = [LogisticRegression(),
+              KNeighborsClassifier(),
+              RandomForestClassifier()]
+    names = ["Logistic Regression" ,"KNN", "Random Forest"]
     scoring = ['accuracy', 'precision_macro', 'recall_macro', 'f1_macro']
-    evaluate_different_models_cv(classfiers,names,scoring)
+    # evaluate_different_models_cv(classfiers,names,scoring)
+
+    logreg_param_grid = {
+        'C': [0.1, 1.0, 10.0],
+        'penalty': ['l1', 'l2'],
+        'solver': ['liblinear', 'saga']
+    }
+
+    knn_param_grid = {
+        'n_neighbors': [3, 5, 7],
+        'weights': ['uniform', 'distance'],
+        'p': [1, 2]
+    }
+
+    rf_grid = {
+        'n_estimators': [50, 100, 200, 300],
+        'criterion': ['gini', 'entropy'],
+        'max_depth': [None, 5, 10, 20],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4],
+        'max_features': ['sqrt', 'log2', None],
+        'class_weight': [None, 'balanced'],
+        'max_samples': [None, 0.5, 0.8]
+    }
+    params = [logreg_param_grid,knn_param_grid, rf_grid]
+    model_selection(classifiers,names, params,X,y)
