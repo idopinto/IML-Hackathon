@@ -5,7 +5,7 @@ from sklearn.preprocessing import LabelEncoder
 from task_1.code.hackathon_code.Utils.utils import parse_policy
 
 
-def preprocess_q1(df):
+def preprocess_q1(df, cancel= True, sell_amount=True):
     encoder = LabelEncoder()
     df['language'] = encoder.fit_transform(df['language']).astype(float)
     df['hotel_country_code'] = encoder.fit_transform(df['hotel_country_code']).astype(float)
@@ -37,7 +37,9 @@ def preprocess_q1(df):
                          df['request_highfloor'] + df['request_twinbeds'] + df['request_earlycheckin'] +
                          df['request_largebed'])
 
-    df["did_cancel"] = ~df["cancellation_datetime"].isna()
+    if cancel:
+        df["did_cancel"] = ~df["cancellation_datetime"].isna()
+
     df["distance_booking_checkin"] = ((df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)).astype(
         float)
     df["amount_guests"] = df["no_of_adults"] + df["no_of_children"]
@@ -45,7 +47,9 @@ def preprocess_q1(df):
     df["checkin_date"] = df["checkin_date"].dt.dayofyear
     df["checkout_date"] = df["checkout_date"].dt.dayofyear
     df["booking_datetime"] = df["booking_datetime"].dt.dayofyear
-    df["price_per_guest_per_night"] = df["original_selling_amount"] / (df["amount_guests"] * df["amount_nights"])
+    # if sell_amount:
+    #     df["price_per_guest_per_night"] = df["original_selling_amount"] / (df["amount_guests"] * df["amount_nights"])
+
     df["costumer_guest_same_nation"] = (df["customer_nationality"] == df["guest_nationality_country_name"]) == \
                                        (df["customer_nationality"] == df['origin_country_code'])
 
@@ -57,10 +61,14 @@ def preprocess_q1(df):
     df['original_payment_currency'] = encoder.fit_transform(df['original_payment_currency']).astype(float)
 
     df["pay_now"] = df["charge_option"] == "Pay Now"
-    y = df["did_cancel"]
-    df = df.drop(["did_cancel", "h_customer_id", "cancellation_datetime",
-                  "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
-    return df, y
+    if cancel:
+        y = df["did_cancel"]
+        df = df.drop(["did_cancel", "h_customer_id", "cancellation_datetime",
+                      "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
+        return df, y
+    else:
+        df = df.drop(["h_customer_id", "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
+        return df
 
 def preprocess_q2(df):
     X, y = preprocess_q1(df)

@@ -7,9 +7,13 @@ from sklearn.metrics import precision_score, recall_score
 from sklearn.metrics import f1_score
 
 
-def load_data(filename):
-    dates_to_parse = ["booking_datetime", "checkin_date",
+def load_data(filename, cancel=True):
+    if cancel:
+        dates_to_parse = ["booking_datetime", "checkin_date",
                        "checkout_date", "hotel_live_date", "cancellation_datetime"]
+    else:
+        dates_to_parse = ["booking_datetime", "checkin_date",
+                       "checkout_date", "hotel_live_date"]
     df = pd.read_csv(filename, parse_dates=dates_to_parse)
     return df
 

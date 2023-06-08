@@ -10,7 +10,7 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, cross_val_
 import xgboost as xgb
 
 import lightgbm as lgb
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, mean_squared_error, make_scorer
@@ -93,7 +93,7 @@ def print_result(title, y_test, y_pred):
 
 
 def run_XGBoost(X_train, y_train, X_test, y_test):
-    params ={
+    params = {
         'max_depth': 7,
         'learning_rate': 0.1,
         'n_estimators': 300,
@@ -118,6 +118,7 @@ def run_XGBoost(X_train, y_train, X_test, y_test):
     # Export the DataFrame to a CSV file
     # df.to_csv('agoda_cancellation_prediction.csv', index=False)
 
+
 def run_lightGBM(clf, X_train, y_train, X_test, y_test, params):
     randomized_search = RandomizedSearchCV(clf, params, scoring='f1', n_iter=10, cv=5)
 
@@ -141,9 +142,8 @@ def predict_cancellation():
     test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
     X_train, y_train = pp.preprocess_q1(train_df)
 
-
     features_to_drop = ["booking_datetime", "no_of_adults",
-                  "origin_country_code", "original_selling_amount", 'h_booking_id', 'hotel_live_date'
+                        "origin_country_code", "original_selling_amount", 'h_booking_id', 'hotel_live_date'
                         ]
 
     # empirically useful features: percentage_cancellation_2, "checkout_date", 'request_earlycheckin', 'hotel_id'
@@ -185,33 +185,6 @@ def predict_cancellation():
     feature_and_importance = np.concatenate((features, np.array(clf.feature_importances_).reshape(-1, 1)), axis=1)
     print(feature_and_importance[np.argsort(np.array(clf.feature_importances_))])
 
-    # param_grid1 = {
-    #     'max_depth': [7],
-    #     'learning_rate': [0.1],
-    #     'n_estimators': [300],
-    #     'gamma': [0.2],
-    #     'subsample': [1.0],
-    #     'colsample_bytree': [1.0],
-    #     'reg_alpha': [0.5],
-    #     'reg_lambda': [0]
-    # }
-
-    # run_XGBoost(X_train, y_train, X_test, y_test)
-
-    # param_grid2 = {
-    #     'boosting_type': ['gbdt', 'dart', 'goss'],
-    #     'num_leaves': [10, 20, 30, 40, 50],
-    #     'learning_rate': [0.01, 0.05, 0.1],
-    #     'n_estimators': [50, 100, 200],
-    #     'subsample': [0.8, 0.9, 1.0],
-    #     'colsample_bytree': [0.8, 0.9, 1.0],
-    #     'reg_alpha': [0.0, 0.1, 0.5],
-    #     'reg_lambda': [0.0, 0.1, 0.5],
-    #     'min_child_samples': [20, 50, 100]
-    # }
-    #
-    # run_lightGBM(lgb.LGBMClassifier(), X_train, y_train, X_test, y_test, param_grid2)
-
 
 def rmse_score(y_true, y_pred):
     mse = mean_squared_error(y_true, y_pred)
@@ -222,7 +195,7 @@ def rmse_score(y_true, y_pred):
 def predict_selling_amount():
     train_df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
     test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
-    features = ["amount_guests","amount_nights", "hotel_star_rating",
+    features = ["amount_guests", "amount_nights", "hotel_star_rating",
                 "distance_booking_checkin", "booking_datetime", "hotel_country_code"]
     X_train, y_train = pp.preprocess_q2(train_df)
     X_train, y_train = X_train[features], train_df['original_selling_amount']
@@ -266,5 +239,49 @@ def predict_selling_amount():
 
 
 if __name__ == '__main__':
-    predict_cancellation()
-    # predict_selling_amount()
+    # Block 1 - Load Data & Preprocessing
+    features = ["amount_guests", "amount_nights", "hotel_star_rating",
+                "distance_booking_checkin", "booking_datetime", "hotel_country_code"]
+    train_df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
+    test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
+    X_train, y_train = pp.preprocess_q1(train_df) # y = cancellation date
+    # X_train2, y_train2 = X_train, train_df['original_selling_amount']
+    X_test, y_test = pp.preprocess_q1(test_df)
+
+    params = {
+        'max_depth': 7,
+        'learning_rate': 0.1,
+        'n_estimators': 300,
+        'gamma': 0.2,
+        'subsample': 1.0,
+        'colsample_bytree': 1.0,
+        'reg_alpha': 0.5,
+        'reg_lambda': 0
+    }
+    xgb= XGBClassifier(**params)
+    xgb.fit(X_train, y_train)
+
+    # xgb2 = XGBClassifier(**params)
+    # xgb2.fit(X_train["price_per_guest_per_night"], y_train)
+
+    ls = LinearRegression()
+    ls.fit(X_train, train_df['original_selling_amount'])
+    # Block 2 - Loading Test Sets for each task
+    test_df1 = utils.load_data("C:/Users/idop8/Desktop/My Files/PyCharmProjects/IML-Hackathon/AgodaCancellationChallenge/Agoda_Test_1.csv",
+                               cancel=False)
+    test1_p = pp.preprocess_q1(test_df1, False)
+    y_pred1 = xgb.predict(test1_p)
+    res1 = pd.DataFrame({'id': test_df1['h_booking_id'], 'cancellation': y_pred1})
+        # .to_csv('agoda_cancellation_prediction.csv', index=False)
+
+    test_df2 = utils.load_data("C:/Users/idop8/Desktop/My Files/PyCharmProjects/IML-Hackathon/AgodaCancellationChallenge/Agoda_Test_2.csv", cancel= False)
+
+    test2_p = pp.preprocess_q1(test_df2, cancel=False, sell_amount=False)
+    y_pred2 = xgb.predict(test2_p)
+    y_pred3 = ls.predict(test2_p)
+    y_pred3 = np.where(condition=(y_pred2 == 0), x=-1, y=y_pred3)
+    # rmse = np.sqrt(mean_squared_error(y_test, y_pred3))
+    # print("RMSE: ", rmse)
+    pd.DataFrame({'id': test_df2['h_booking_id'], 'predicted_selling_amount': y_pred3}) \
+        .to_csv('agoda_cost_of_cancellation.csv', index=False)
+    # Block 3 - question 3 & 4 + plots in pdf
