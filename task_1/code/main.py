@@ -1,14 +1,25 @@
-import numpy as np
+from hackathon_code.Base import baseline
 import pandas as pd
-from matplotlib import pyplot as plt
+from task_1.code.hackathon_code.Utils import pp
+from sklearn.metrics import precision_score, recall_score
 
 if __name__ == '__main__':
-    df = pd.read_csv(
-        "C:\\Users\\matan\\PycharmProjects\\IML-Hackathon\\AgodaCancellationChallenge\\agoda_cancellation_train.csv")
-    df["did_cancel"] = df["cancellation_datetime"].isna()
-    df["amount_guests"] = df["no_of_adults"] + df["no_of_children"]
-    df["price_per_guest_per_night"] = df["original_selling_amount"] / (df["amount_guests"] * df["amount_nights"])
-    df["costumer_guest_same_nation"] = df["customer_nationality"] == df["guest_nationality_country_name"]
-    df["pay_now"] = df["charge_option"] == "pay_now"
-    df["distance_booking_checkin"]
-    df["amount_nights"]
+
+    dates_to_parse = [["booking_datetime","checkin_date", "checkout_date", "hotel_live_date", "cancellation_datetime"]]
+    df = pd.read_csv("hackathon_code/Datasets/train_set_agoda.csv",parse_dates=dates_to_parse)
+    # preprocessing
+    X, y = pp.preprocess(df)
+
+    # fit
+    model = baseline.BaseEstimator().fit(X, y)
+    f1 = model.loss(y, model.predict(X))
+
+    # Calculate precision
+    precision = precision_score(y, model.predict(X))
+
+    # Calculate recall
+    recall = recall_score(y, model.predict(X))
+
+    # Print the results
+    print("Precision:", precision)
+    print("Recall:", recall)

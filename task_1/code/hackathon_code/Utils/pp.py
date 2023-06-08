@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 
 def preprocess(df):
-    df["did_cancel"] = df["cancellation_datetime"].isna()
+    df["did_cancel"] = ~df["cancellation_datetime"].isna()
     df["distance_booking_checkin"] = (df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)
     df["amount_guests"] = df["no_of_adults"] + df["no_of_children"]
     df["amount_nights"] = (df["checkout_date"] - df["checkin_date"]) / pd.Timedelta(days=1)
@@ -12,5 +12,5 @@ def preprocess(df):
     df["costumer_guest_same_nation"] = df["customer_nationality"] == df["guest_nationality_country_name"]
     df["pay_now"] = df["charge_option"] == "pay_now"
     y = df["did_cancel"]
-    df = df.drop(["h_booking_id", "did_cancel", "h_costumer_id"], axis=1)
+    df = df.drop(["h_booking_id", "did_cancel"], axis=1)
     return df, y
