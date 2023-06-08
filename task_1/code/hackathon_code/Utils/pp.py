@@ -21,6 +21,14 @@ def preprocess_q1(df):
     df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
     df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
 
+    df[["days_cancellation_1",
+        "percentage_cancellation_1",
+        "days_cancellation_2",
+        "percentage_cancellation_2",
+        "no_show_percentage"]] = pd.DataFrame(df.apply(lambda row:
+                                                       parse_policy(row["cancellation_policy_code"],
+                                                                    row["amount_nights"]), axis=1).tolist(),
+                                              index=df.index)
     # df['cancellation_policy_code'] = df['cancellation_policy_code'].apply(
     #     lambda x: re.findall(r'(\d+)D', x)[0] if re.findall(r'(\d+)D', x) else 0).astype(float)
 
@@ -70,8 +78,8 @@ def preprocess_q2(df):
     df['request_largebed'] = df['request_largebed'].apply(lambda x: x if (x == 0) or (x == 1) else 0)
     df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
     df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
-    df["original_selling_amount"] = df["original_selling_amount"] * (df["did_cancel"].astype(int))
-    df['original_selling_amount'] = df['original_selling_amount'].apply(lambda x: x if x > 0 else -1)
+    # df["original_selling_amount"] = df["original_selling_amount"] * (df["did_cancel"].astype(int))
+    # df['original_selling_amount'] = df['original_selling_amount'].apply(lambda x: x if x > 0 else -1)
 
     # df['cancellation_policy_code'] = df['cancellation_policy_code'].apply(
     #     lambda x: re.findall(r'(\d+)D', x)[0] if re.findall(r'(\d+)D', x) else 0).astype(float)
@@ -95,6 +103,14 @@ def preprocess_q2(df):
     #     lambda row: parse_policy(row["cancellation_policy_code"], row["amount_nights"])[0], axis=1)
     # df["days_cancellation_1"] = parse_policy(df["cancellation_policy_code"], df["amount_nights"])
     # df["days_cancellation_1"] = df['cancellation_policy_code'].apply(lambda x: parse_policy(x) if True else -1)
+
+    df[["days_cancellation_1",
+        "percentage_cancellation_1",
+        "days_cancellation_2",
+        "percentage_cancellation_2",
+        "no_show_percentage"]] = pd.DataFrame(df.apply(lambda row:
+                                                       parse_policy(row["cancellation_policy_code"],
+                                                                    row["amount_nights"]), axis=1).tolist(),index=df.index)
 
     df["costumer_guest_same_nation"] = (df["customer_nationality"] == df["guest_nationality_country_name"]) == \
                                        (df["customer_nationality"] == df['origin_country_code'])
