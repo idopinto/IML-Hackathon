@@ -6,14 +6,15 @@ from hackathon_code.Base import baseline
 import pandas as pd
 from task_1.code.hackathon_code.Utils import utils, pp
 # from hackathon_code.models import model
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, cross_val_score
 import xgboost as xgb
 
 import lightgbm as lgb
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_validate
-from sklearn.metrics import precision_score, recall_score, f1_score,accuracy_score
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, mean_squared_error, make_scorer
+
 
 def evaluate_different_models_cv(X,y, classifiers,names, scoring):
     f1_results = []
@@ -125,7 +126,7 @@ def run_lightGBM(clf,X_train,y_train,X_test,y_test,params):
     y_pred = randomized_search.predict(X_test)
     y_pred_binary = [1 if p >= 0.5 else 0 for p in y_pred]  # Convert probabilities to binary predictions
     print_result("Test Results", y_test, y_pred_binary)
-def predict_cancelation():
+def predict_cancellation():
     train_df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
     test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
     X_train, y_train = pp.preprocess(train_df)
@@ -156,6 +157,42 @@ def predict_cancelation():
     }
     run_lightGBM(lgb.LGBMClassifier(), X_train, y_train, X_test, y_test, param_grid2)
 
+def rmse_score(y_true, y_pred):
+    mse = mean_squared_error(y_true, y_pred)
+    rmse = np.sqrt(mse)
+    return rmse
+
+def predict_selling_amount():
+    train_df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
+    test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
+    features = ["amount_guests","amount_nights", "hotel_star_rating",
+                "distance_booking_checkin", "booking_datetime", "hotel_country_code"]
+    X_train, y_train = pp.preprocess(train_df)
+    X_train, y_train = X_train[features], train_df['original_selling_amount']
+    X_test, y_test = pp.preprocess(test_df)
+    X_test, y_test = X_test[features], test_df['original_selling_amount']
+
+    from sklearn.linear_model import LinearRegression
+    from sklearn.linear_model import Ridge, Lasso
+
+
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_train)
+    rmse = np.sqrt(mean_squared_error(y_train, y_pred))
+    print("LS RMSE: ", rmse)
+    print("-----------------------------------------------------")
+    cv_scores = cross_val_score(Ridge(alpha=0.01), X_train, y_train, cv=5, scoring=make_scorer(rmse_score))
+    # Print the cross-validation scores
+    print("Cross-validation scores:", cv_scores)
+    print("RIDGE Mean CV score:", cv_scores.mean())
+
+    cv_scores = cross_val_score(Lasso(alpha=0.01), X_train, y_train, cv=5, scoring=make_scorer(rmse_score))
+
+    # Print the cross-validation scores
+    print("Cross-validation scores:", cv_scores)
+    print("LASSO Mean CV score:", cv_scores.mean())
 
 if __name__ == '__main__':
-    predict_cancelation()
+    # predict_cancellation()
+    predict_selling_amount()
