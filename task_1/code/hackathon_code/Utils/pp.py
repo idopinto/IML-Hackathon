@@ -36,6 +36,6 @@ def preprocess(df):
     df["costumer_guest_same_nation"] = df["customer_nationality"] == df["guest_nationality_country_name"]
     df["pay_now"] = df["charge_option"] == "Pay Now"
     y = df["did_cancel"]
-    df = df.drop(["h_booking_id", "did_cancel", "h_customer_id", "cancellation_datetime",
+    df = df.drop(["did_cancel", "h_customer_id", "cancellation_datetime",
                   "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
     return df, y
