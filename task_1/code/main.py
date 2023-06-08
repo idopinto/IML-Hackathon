@@ -3,20 +3,24 @@ from sklearn.neighbors import KNeighborsClassifier
 from hackathon_code.Base import baseline
 import pandas as pd
 from task_1.code.hackathon_code.Utils import utils, pp
-from sklearn.metrics import precision_score, recall_score, f1_score
 from hackathon_code.models import model
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-import lightgbm as lgb
 
-if __name__ == '__main__':
-    df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
-    features = ['pay_now', 'hotel_id', 'language', 'hotel_star_rating']
-    # preprocessing
-    X, y = pp.preprocess(df)
-    X = X[features]
+import lightgbm as lgb
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score, recall_score, f1_score,accuracy_score
+
+
+
+
+
+
+
+
+
+def run_baseline(X,y):
     f1, precision, recall = utils.pipeline(X, y)
 
     print("Baseline model Results :\n"
@@ -25,33 +29,28 @@ if __name__ == '__main__':
           f"\t F1: {f1}\n"
           f"--------------------------------------\n")
 
-    # Initialize the logistic regression model
+if __name__ == '__main__':
+    df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
+    features = ['pay_now', 'hotel_id', 'language', 'hotel_star_rating']
+    # preprocessing
+    X, y = pp.preprocess(df)
+    X = X[features]
+    run_baseline(X, y)
+    models = [LogisticRegression(),
+              KNeighborsClassifier(n_neighbors=5),
+              RandomForestClassifier(n_estimators=100, random_state=42)]
+    names = ["Logistic Regression", "KNN", "Random Forest"]
+    f1_scores = []
+    for i, model in enumerate(models):
+        model.fit(X, y)
+        y_pred = model.predict(X)
+        accuracy = accuracy_score(y, y_pred)
+        f1_scores.append(f1_score(y, y_pred))
+        print(f"{names[i]} Results")
+        print("\tAccuracy: ", accuracy)
+        print("\tF1 Score: ", f1_scores[i])
+        print("--------------------------------------")
 
-    logreg = LogisticRegression()
-    # Train the model on the training data
-    logreg.fit(X, y)
-
-    # Make predictions on the test data
-    y_pred = logreg.predict(X)
-    # Evaluate the accuracy of the model
-    accuracy = accuracy_score(y, y_pred)
-    print("Logistic Regression Results")
-    print("\tAccuracy: ", accuracy)
-    print("\tF1 Score: ", f1_score(y, y_pred))
-
-    knn = KNeighborsClassifier(n_neighbors=5)
-# Train the classifier on the training data
-    knn.fit(X, y)
-
-    # Make predictions on the test data
-    y_pred = knn.predict(X)
-
-    # Evaluate the accuracy of the classifier
-    accuracy = accuracy_score(y, y_pred)
-    print("KNN Results:")
-    print("\tKNN Accuracy:", accuracy)
-    print("\tKNN F1 Score: ", f1_score(y, y_pred))
-    print("--------------------------------------")
     # Prepare the dataset for LightGBM
     train_data = lgb.Dataset(X, label=y)
 
