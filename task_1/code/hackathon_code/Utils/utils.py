@@ -5,7 +5,6 @@ from ..Base import baseline
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score
 from sklearn.metrics import f1_score
-from task_1.code.hackathon_code.Utils.pp import preprocess
 
 
 def load_data(filename):
