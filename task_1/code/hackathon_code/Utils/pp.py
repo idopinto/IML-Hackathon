@@ -22,8 +22,8 @@ def preprocess(df):
 
     df["cancellation_policy_code"] = df["cancellation_policy_code"].apply(lambda x: 0 if x.startswith("365D") else x)
     df["cancellation_policy_code"] = df["cancellation_policy_code"].apply(
-        lambda x: 1 if x != 0 and (x.startswith("1D") or x.startswith("0D")) else x)
-    df["cancellation_policy_code"] = df["cancellation_policy_code"].apply(lambda x: x if x == 1 or x == 0 else 2)
+        lambda x: 2 if x != 0 and (x.startswith("1D") or x.startswith("0D")) else x)
+    df["cancellation_policy_code"] = df["cancellation_policy_code"].apply(lambda x: x if x == 2 or x == 0 else 1)
 
     df["has_request"] = (df['request_nonesmoke'] + df['request_airport'] + df['request_latecheckin'] +
                          df['request_highfloor'] + df['request_twinbeds'] + df['request_earlycheckin'] +
