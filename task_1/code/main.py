@@ -15,63 +15,24 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import precision_score, recall_score, f1_score,accuracy_score
 
-
-
-
-
-
-
-def run_lightGBN(X, y):
-    # # Prepare the dataset for LightGBM
-    train_data = lgb.Dataset(X, label=y)
-
-    # Set the parameters for LightGBM
-    params = {
-        'objective': 'binary',
-        'metric': 'binary_logloss',
-        'boosting_type': 'gbdt',
-        'num_leaves': 31,
-        'learning_rate': 0.05,
-        'feature_fraction': 0.9,
-        'bagging_fraction': 0.8,
-        'bagging_freq': 5,
-        'verbose': 0
-    }
-
-
-    # Train the LightGBM model
-    model = lgb.train(params, train_data, num_boost_round=100)
-
-    # Make predictions on the test data
-    y_pred = model.predict(X)
-    y_pred = [1 if pred >= 0.5 else 0 for pred in y_pred]  # Convert probabilities to class labels
-
-    # Evaluate the accuracy of the model
-    accuracy = accuracy_score(y, y_pred)
-    print("LightGBM Results")
-    print("\tAccuracy:", accuracy)
-    print("\tF1 Score: ", f1_score(y, y_pred))
-
-def evaluate_different_models_cv(classifiers, names, scoring):
+def evaluate_different_models_cv(X,y, classifiers,names, scoring):
     f1_results = []
     for i, classifier in enumerate(classifiers):
-        # classifier.fit(X, y)
         # Perform cross-validation
         cv_results = cross_validate(classifier, X, y, scoring=scoring, cv=5)
         f1_results.append(cv_results['test_f1_macro'].mean())
         # Extract and print the mean scores
         print(f"{names[i]} Results")
 
-        print("\tAccuracy:", cv_results['test_accuracy'].mean())
-        print("\tPrecision:", cv_results['test_precision_macro'].mean())
-        print("\tRecall:", cv_results['test_recall_macro'].mean())
-        print("\tF1 Score:", cv_results['test_f1_macro'].mean())
-        print("--------------------------------------------------")
+        # print("\tAccuracy:", cv_results['test_accuracy'].mean())
+        # print("\tPrecision:", cv_results['test_precision_macro'].mean())
+        # print("\tRecall:", cv_results['test_recall_macro'].mean())
+        # print("\tF1 Score:", cv_results['test_f1_macro'].mean())
+        # print("--------------------------------------------------")
     best_f1 = np.argmax(np.array(f1_results))
     print("The Best Model is:\n"
           f"\t {names[best_f1]}\n"
           f"\t f1 score: {f1_results[best_f1]}\n")
-
 
 def run_baseline(X,y):
     f1, precision, recall = utils.pipeline(X, y)
@@ -94,15 +55,14 @@ def model_selection(models,names,params_grids, X,y,scoring='f1'):
         print(f"GridSearchCV for {names[i]} - Best F1 Score:", grid_search.best_score_)
         print("--------------------------------------------")
 
-def find_best_params_xgboost(X, y, param_grid, n_iter=10, cv=5):
+def find_best_params_xgboost(clf, X, y, param_grid, n_iter=10, cv=3):
     # # Split the data into train and test sets
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
     # Create the XGBoost classifier
-    xgb = XGBClassifier()
+    # xgb = XGBClassifier()
 
     # Create the RandomizedSearchCV object
-    randomized_search = RandomizedSearchCV(xgb, param_distributions=param_grid, n_iter=n_iter, cv=cv, scoring='f1')
+    randomized_search = RandomizedSearchCV(clf, param_distributions=param_grid,
+                                           n_iter=n_iter, cv=cv, scoring='f1')
 
     # Fit the RandomizedSearchCV object to the training data
     randomized_search.fit(X, y)
@@ -116,66 +76,86 @@ def find_best_params_xgboost(X, y, param_grid, n_iter=10, cv=5):
 
     # Calculate the F1 score on the test set
     f1 = f1_score(y, y_pred)
+    precision = precision_score(y, y_pred)
+    recall = recall_score(y,y_pred)
+    return randomized_search, best_params, best_score, f1, precision, recall
 
-    return best_params, best_score, f1
-def main():
-    # features = ['pay_now', 'hotel_id', 'language', 'hotel_star_rating',"distance_booking_checkin"]
+def print_result(title, y_test,y_pred):
+    print(title)
+    print("\tF1: ", f1_score(y_test, y_pred))
+    print("\tPrecision: ", precision_score(y_test, y_pred))
+    print("\tRecall: ", recall_score(y_test, y_pred))
+def run_XGBoost(clf, params,X_train,y_train,X_test,y_test):
 
-    # preprocessing
-    X, y = pp.preprocess(df)
-    features = X.select_dtypes(include=['float64', 'int64','boolean']).columns
-    X = X[features]
+    # best_model, best_params, best_score, f1, precision, recall = find_best_params_xgboost(clf, X_train,y_train,params)
+    randomized_search = RandomizedSearchCV(clf, param_distributions=params,n_iter=10, cv=5, scoring='f1')
 
-    # model_selection(classifiers,names, params, X, y)
-    param_grid = {
-        'max_depth': [10],
-        'learning_rate': [0.04],
-        'n_estimators': [100],
+    # Fit the RandomizedSearchCV object to the training data
+    randomized_search.fit(X_train, y_train)
+
+    # Get the best parameters and the best F1 score
+    best_params = randomized_search.best_params_
+    best_score = randomized_search.best_score_
+
+    # Make predictions on the test set using the best model
+    y_pred = randomized_search.predict(X_test)
+
+    print("Train Results:")
+    print("\tbest params: ", best_params)
+    print("\tbest score: ", best_score)
+    # print("\tF1: ", f1_score(y_test, y_pred))
+    # print("\tPrecision:" , precision_score(y_test, y_pred))
+    # print("\tRecall: ",  recall_score(y_test,y_pred))
+    print_result("Test Results", y_test,y_pred)
+
+def run_lightGBM(clf,X_train,y_train,X_test,y_test,params):
+
+    randomized_search = RandomizedSearchCV(clf, params, scoring='f1', n_iter=10, cv=5)
+
+    # Fit the RandomizedSearchCV object to the training data
+    randomized_search.fit(X_train, y_train)
+
+    # Get the best parameters and the best F1 score
+    best_params = randomized_search.best_params_
+    best_score = randomized_search.best_score_
+    print("Train Results:")
+    print("\tbest params: ", best_params)
+    print("\tbest score: ", best_score)
+    # Make predictions on the test set using the best model
+    y_pred = randomized_search.predict(X_test)
+    y_pred_binary = [1 if p >= 0.5 else 0 for p in y_pred]  # Convert probabilities to binary predictions
+    print_result("Test Results", y_test, y_pred_binary)
+def predict_cancelation():
+    train_df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
+    test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
+    X_train, y_train = pp.preprocess(train_df)
+    X_test, y_test = pp.preprocess(test_df)
+
+    param_grid1 = {
+        'max_depth': [7],
+        'learning_rate': [0.1],
+        'n_estimators': [300],
         'gamma': [0.2],
-        'subsample': [0.8],
-        'colsample_bytree': [0.8],
+        'subsample': [1.0],
+        'colsample_bytree': [1.0],
         'reg_alpha': [0.5],
-        'reg_lambda': [0.5],
+        'reg_lambda': [0],
     }
-    best_params, best_score, f1 = find_best_params_xgboost(X,y,param_grid)
-    print("best params: ", best_params)
-    print("best score: ", best_score)
-    print("F1: ", f1)
+    run_XGBoost(XGBClassifier(), param_grid1, X_train, y_train, X_test, y_test)
+
+    param_grid2 = {
+        'boosting_type': ['gbdt', 'dart', 'goss'],
+        'num_leaves': [10, 20, 30, 40, 50],
+        'learning_rate': [0.01, 0.05, 0.1],
+        'n_estimators': [50, 100, 200],
+        'subsample': [0.8, 0.9, 1.0],
+        'colsample_bytree': [0.8, 0.9, 1.0],
+        'reg_alpha': [0.0, 0.1, 0.5],
+        'reg_lambda': [0.0, 0.1, 0.5],
+        'min_child_samples': [20, 50, 100]
+    }
+    run_lightGBM(lgb.LGBMClassifier(), X_train, y_train, X_test, y_test, param_grid2)
 
 
 if __name__ == '__main__':
-    df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
-    main()
-
-
-
-    # run_baseline(X, y)
-    # run_lightGBN(X, y)
-    # ------------------------------
-    # classifiers = [LogisticRegression(), KNeighborsClassifier(),RandomForestClassifier()]
-    # names = ["Logistic Regression", "KNN", "Random Forest"]
-    # scoring = ['accuracy', 'precision_macro', 'recall_macro', 'f1_macro']
-    # evaluate_different_models_cv(classfiers,names,scoring)
-
-    # logreg_param_grid = {
-    #     'C': [0.1, 1.0, 10.0],
-    #     'penalty': ['l1', 'l2'],
-    #     'solver': ['liblinear', 'saga']
-    # }
-
-    # knn_param_grid = {
-    #     'n_neighbors': [3, 5, 7],
-    #     'weights': ['uniform', 'distance'],
-    #     'p': [1, 2]
-    # }
-    #
-    # rf_grid = {
-    #     'n_estimators': [100],
-    #     'criterion': ['gini'],
-    #     'max_depth': [5],
-    #     'min_samples_split': [2],
-    #     'min_samples_leaf': [1],
-    #     'max_features': ['sqrt'],
-    #     'class_weight': ['balanced'],
-    # }
-    # params = [logreg_param_grid,knn_param_grid, rf_grid]
+    predict_cancelation()
