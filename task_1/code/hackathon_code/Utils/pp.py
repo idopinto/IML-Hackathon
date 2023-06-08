@@ -21,6 +21,7 @@ def preprocess_q1(df):
     df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
     df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
 
+    df["amount_nights"] = ((df["checkout_date"] - df["checkin_date"]) / pd.Timedelta(days=1)).astype(float)
     df[["days_cancellation_1",
         "percentage_cancellation_1",
         "days_cancellation_2",
@@ -40,7 +41,6 @@ def preprocess_q1(df):
     df["distance_booking_checkin"] = ((df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)).astype(
         float)
     df["amount_guests"] = df["no_of_adults"] + df["no_of_children"]
-    df["amount_nights"] = ((df["checkout_date"] - df["checkin_date"]) / pd.Timedelta(days=1)).astype(float)
     df["hotel_live_date"] = ((df["checkin_date"] - df["hotel_live_date"]) / pd.Timedelta(days=1)).astype(float)
     df["checkin_date"] = df["checkin_date"].dt.dayofyear
     df["checkout_date"] = df["checkout_date"].dt.dayofyear
