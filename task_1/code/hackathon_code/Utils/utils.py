@@ -83,6 +83,8 @@ def parse_policy(policy_code, num_nights):
     policies = policy_code.split("_")
     parsed_policy = [-1, -1, -1, -1, -1]  # Initialize the list with -1
 
+    if policy_code == "UNKNOWN": return parsed_policy
+
     for i, policy in enumerate(policies):
         if policy == '':
             continue
