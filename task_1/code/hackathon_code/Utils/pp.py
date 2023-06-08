@@ -47,10 +47,10 @@ def preprocess(df):
     df['customer_nationality'] = encoder.fit_transform(df['customer_nationality']).astype(float)
     df['original_payment_method'] = encoder.fit_transform(df['original_payment_method']).astype(float)
     df['original_payment_type'] = encoder.fit_transform(df['original_payment_type']).astype(float)
+    df['original_payment_currency'] = encoder.fit_transform(df['original_payment_currency']).astype(float)
 
     df["pay_now"] = df["charge_option"] == "Pay Now"
     y = df["did_cancel"]
     df = df.drop(["did_cancel", "h_customer_id", "cancellation_datetime",
                   "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
     return df, y
-df['original_payment_currency'] = encoder.fit_transform(df['original_payment_currency']).astype(float)
