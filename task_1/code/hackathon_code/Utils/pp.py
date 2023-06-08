@@ -15,6 +15,9 @@ def preprocess(df):
     df['request_highfloor'] = df['request_highfloor'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
     df['request_twinbeds'] = df['request_twinbeds'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
     df['request_earlycheckin'] = df['request_earlycheckin'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
+    df['request_largebed'] = df['request_largebed'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
+    df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
+    df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
 
 
     df["did_cancel"] = ~df["cancellation_datetime"].isna()
@@ -28,6 +31,6 @@ def preprocess(df):
     df["costumer_guest_same_nation"] = df["customer_nationality"] == df["guest_nationality_country_name"]
     df["pay_now"] = df["charge_option"] == "Pay Now"
     y = df["did_cancel"]
-    df = df.drop(["h_booking_id", "did_cancel", "h_customer_id"], axis=1)
+    df = df.drop(["h_booking_id", "did_cancel", "h_customer_id", "cancellation_datetime"], axis=1)
     return df, y
 
