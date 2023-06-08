@@ -1,16 +1,11 @@
-import numpy as np
+from hackathon_code.Base import baseline
 import pandas as pd
-from matplotlib import pyplot as plt
-from task_1.code.pp import preprocess
-
+from task_1.code.hackathon_code.Utils import utils
+from sklearn.metrics import precision_score, recall_score
 if __name__ == '__main__':
-    filename = "Datasets/train_set_agoda.csv"
-
-    df = pd.read_csv(filename,
-                     parse_dates=["booking_datetime", "checkin_date", "checkout_date", "hotel_live_date",
-                                  "cancellation_datetime"])
-    # df.head()
-    X, y = preprocess(df)
-
-    X.head()
-    y.head()
+    df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
+    f1, precision, recall = utils.pipeline(df)
+    print("Results:\n"
+          f"\t Precision: {precision}\n"
+          f"\t Recall: {recall}\n"
+          f"\t F1: {f1}\n")
