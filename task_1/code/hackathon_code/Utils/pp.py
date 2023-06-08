@@ -3,6 +3,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 
+
 def preprocess(df):
     encoder = LabelEncoder()
     df['language'] = encoder.fit_transform(df['language'])
@@ -19,6 +20,11 @@ def preprocess(df):
     df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
     df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
 
+    df["has_request"] = (df['request_nonesmoke'] == 1) or (df['request_nonesmoke'] == 1) or \
+                        (df['request_nonesmoke'] == 1) or (df['request_airport'] == 1) or \
+                        (df['request_latecheckin'] == 1) or (df['request_highfloor'] == 1) or \
+                        (df['request_twinbeds'] == 1) or (df['request_earlycheckin'] == 1) or \
+                        (df['request_largebed'] == 1)
 
     df["did_cancel"] = ~df["cancellation_datetime"].isna()
     df["distance_booking_checkin"] = ((df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)).astype(int)
@@ -34,4 +40,3 @@ def preprocess(df):
     df = df.drop(["h_booking_id", "did_cancel", "h_customer_id", "cancellation_datetime",
                   "hotel_brand_code", "hotel_chain_code"], axis=1)
     return df, y
-
