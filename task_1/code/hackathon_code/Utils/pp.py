@@ -30,8 +30,8 @@ def preprocess_q1(df):
                                                        parse_policy(row["cancellation_policy_code"],
                                                                     row["amount_nights"]), axis=1).tolist(),
                                               index=df.index)
-    # df['cancellation_policy_code'] = df['cancellation_policy_code'].apply(
-    #     lambda x: re.findall(r'(\d+)D', x)[0] if re.findall(r'(\d+)D', x) else 0).astype(float)
+    df['cancellation_policy_code'] = df['cancellation_policy_code'].apply(
+        lambda x: re.findall(r'(\d+)D', x)[0] if re.findall(r'(\d+)D', x) else 0).astype(float)
 
     df["has_request"] = (df['request_nonesmoke'] + df['request_airport'] + df['request_latecheckin'] +
                          df['request_highfloor'] + df['request_twinbeds'] + df['request_earlycheckin'] +
@@ -59,7 +59,7 @@ def preprocess_q1(df):
     df["pay_now"] = df["charge_option"] == "Pay Now"
     y = df["did_cancel"]
     df = df.drop(["did_cancel", "h_customer_id", "cancellation_datetime",
-                  "hotel_brand_code", "hotel_chain_code", "charge_option", "cancellation_policy_code"], axis=1)
+                  "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
     return df, y
 
 def preprocess_q2(df):
