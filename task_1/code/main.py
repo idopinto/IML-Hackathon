@@ -113,10 +113,10 @@ def run_XGBoost(X_train, y_train, X_test, y_test):
     # print(np.argmax(np.array(clf.feature_importances_)))
     # print(X_train.columns[np.argmax(np.array(clf.feature_importances_))])
     # Create a new DataFrame with 'id' and 'cancellation' columns
-    df = pd.DataFrame({'id': id_column, 'cancellation': y_pred})
+    # df = pd.DataFrame({'id': id_column, 'cancellation': y_pred})
 
     # Export the DataFrame to a CSV file
-    df.to_csv('agoda_cancellation_prediction.csv', index=False)
+    # df.to_csv('agoda_cancellation_prediction.csv', index=False)
 
 def run_lightGBM(clf, X_train, y_train, X_test, y_test, params):
     randomized_search = RandomizedSearchCV(clf, params, scoring='f1', n_iter=10, cv=5)
@@ -140,7 +140,23 @@ def predict_cancellation():
     train_df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
     test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
     X_train, y_train = pp.preprocess_q1(train_df)
+
+
+    features_to_drop = ["booking_datetime", "no_of_adults",
+                  "origin_country_code", "original_selling_amount", 'h_booking_id', 'hotel_live_date'
+                        ]
+
+    # empirically useful features: percentage_cancellation_2, "checkout_date", 'request_earlycheckin', 'hotel_id'
+
+    # empirically useless features: , "hotel_id", "original_selling_amount"
+
+    # empirically useful to drop: "booking_datetime", h_booking_id, "origin_country_code", "no_of_adults"
+
+    X_train = X_train.drop(features_to_drop, axis=1)
+
     X_test, y_test = pp.preprocess_q1(test_df)
+
+    X_test = X_test.drop(features_to_drop, axis=1)
 
     params = {
         'max_depth': 7,
@@ -165,7 +181,9 @@ def predict_cancellation():
     # print(clf.feature_importances_)
     # print(len(clf.feature_importances_))
     # print(np.argmax(np.array(clf.feature_importances_)))
-    # print(X_train.columns[np.argmax(np.array(clf.feature_importances_))])
+    features = np.array(X_train.columns).reshape((-1, 1))
+    feature_and_importance = np.concatenate((features, np.array(clf.feature_importances_).reshape(-1, 1)), axis=1)
+    print(feature_and_importance[np.argsort(np.array(clf.feature_importances_))])
 
     # param_grid1 = {
     #     'max_depth': [7],
@@ -221,6 +239,20 @@ def predict_selling_amount():
     rmse = np.sqrt(mean_squared_error(y_train, y_pred))
     print("LS RMSE: ", rmse)
     print("-----------------------------------------------------")
+
+    # y_test_pred = model.predict(X_test)
+    # # print(y_test_pred)
+    # rmse = np.sqrt(mean_squared_error(y_test_pred, y_test))
+    # np_y_test_pred = np.array(y_test_pred).reshape((-1, 1))
+    # np_y_test = np.array(y_test).reshape((-1, 1))
+    # compare = np.concatenate((np_y_test_pred, np_y_test), axis=1)
+    # # y_test_pred['real_value'] = y_test
+    # compare = np.abs(compare[:, 0] - compare[:, 1])
+    # print(np.mean(compare))
+    # print(compare.shape)
+    # print("LS RMSE: ", rmse)
+    # print("-----------------------------------------------------")
+
     # cv_scores = cross_val_score(Ridge(alpha=0.01), X_train, y_train, cv=5, scoring=make_scorer(rmse_score))
     # # Print the cross-validation scores
     # print("Cross-validation scores:", cv_scores)
