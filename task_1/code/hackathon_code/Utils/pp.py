@@ -21,8 +21,8 @@ def preprocess_q1(df):
     df['hotel_brand_code'] = df['hotel_brand_code'].apply(lambda x: x if x >= 0 else -1)
     df['hotel_chain_code'] = df['hotel_chain_code'].apply(lambda x: x if x >= 0 else -1)
 
-    df['cancellation_policy_code'] = df['cancellation_policy_code'].apply(
-        lambda x: re.findall(r'(\d+)D', x)[0] if re.findall(r'(\d+)D', x) else 0).astype(float)
+    # df['cancellation_policy_code'] = df['cancellation_policy_code'].apply(
+    #     lambda x: re.findall(r'(\d+)D', x)[0] if re.findall(r'(\d+)D', x) else 0).astype(float)
 
     df["has_request"] = (df['request_nonesmoke'] + df['request_airport'] + df['request_latecheckin'] +
                          df['request_highfloor'] + df['request_twinbeds'] + df['request_earlycheckin'] +
@@ -90,8 +90,9 @@ def preprocess_q2(df):
     df["checkout_date"] = df["checkout_date"].dt.dayofyear
     df["booking_datetime"] = df["booking_datetime"].dt.dayofyear
 
-    df["days_cancellation_1"] = df.apply(
-        lambda row: parse_policy(row["cancellation_policy_code"], row["amount_nights"])[0], axis=1)
+    # df["t"] = [df["cancellation_policy_code"],df["amount_nights"]]
+    # df["days_cancellation_1"] = df.apply(
+    #     lambda row: parse_policy(row["cancellation_policy_code"], row["amount_nights"])[0], axis=1)
     # df["days_cancellation_1"] = parse_policy(df["cancellation_policy_code"], df["amount_nights"])
     # df["days_cancellation_1"] = df['cancellation_policy_code'].apply(lambda x: parse_policy(x) if True else -1)
 
