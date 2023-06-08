@@ -9,6 +9,13 @@ def preprocess(df):
     df['hotel_country_code'] = encoder.fit_transform(df['hotel_country_code'])
     df["accommadation_type_name"] = encoder.fit_transform(df["accommadation_type_name"])
 
+    df['request_nonesmoke'] = df['request_nonesmoke'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
+    df['request_airport'] = df['request_airport'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
+    df['request_latecheckin'] = df['request_latecheckin'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
+    df['request_highfloor'] = df['request_highfloor'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
+    df['request_twinbeds'] = df['request_twinbeds'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
+    df['request_earlycheckin'] = df['request_earlycheckin'].apply(lambda x: x if (x == 0) or (x == 1) else -1)
+
 
     df["did_cancel"] = ~df["cancellation_datetime"].isna()
     df["distance_booking_checkin"] = ((df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)).astype(int)
@@ -21,6 +28,6 @@ def preprocess(df):
     df["costumer_guest_same_nation"] = df["customer_nationality"] == df["guest_nationality_country_name"]
     df["pay_now"] = df["charge_option"] == "Pay Now"
     y = df["did_cancel"]
-    df = df.drop(["h_booking_id", "did_cancel", "h_customer_id", "request_nonesmoke", "request_airport"], axis=1)
+    df = df.drop(["h_booking_id", "did_cancel", "h_customer_id"], axis=1)
     return df, y
 
