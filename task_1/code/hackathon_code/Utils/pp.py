@@ -8,8 +8,6 @@ def preprocess(df):
     df['language'] = encoder.fit_transform(df['language'])
     df['hotel_country_code'] = encoder.fit_transform(df['hotel_country_code'])
     df["accommadation_type_name"] = encoder.fit_transform(df["accommadation_type_name"])
-    df["accommadation_type_name"] = encoder.fit_transform(df["accommadation_type_name"])
-    df["accommadation_type_name"] = encoder.fit_transform(df["accommadation_type_name"])
 
 
     df["did_cancel"] = ~df["cancellation_datetime"].isna()
