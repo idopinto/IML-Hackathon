@@ -136,4 +136,4 @@ if __name__ == '__main__':
         'max_samples': [None, 0.5, 0.8]
     }
     params = [logreg_param_grid,knn_param_grid, rf_grid]
-    model_selection(classifiers,names, params,X,y)
+    model_selection(classifiers,names, params, X, y)
