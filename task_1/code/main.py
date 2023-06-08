@@ -1,11 +1,13 @@
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
+from xgboost import XGBClassifier
 
 from hackathon_code.Base import baseline
 import pandas as pd
 from task_1.code.hackathon_code.Utils import utils, pp
 # from hackathon_code.models import model
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+import xgboost as xgb
 
 import lightgbm as lgb
 from sklearn.linear_model import LogisticRegression
@@ -92,48 +94,88 @@ def model_selection(models,names,params_grids, X,y,scoring='f1'):
         print(f"GridSearchCV for {names[i]} - Best F1 Score:", grid_search.best_score_)
         print("--------------------------------------------")
 
+def find_best_params_xgboost(X, y, param_grid, n_iter=10, cv=5):
+    # # Split the data into train and test sets
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-if __name__ == '__main__':
-    df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
+    # Create the XGBoost classifier
+    xgb = XGBClassifier()
+
+    # Create the RandomizedSearchCV object
+    randomized_search = RandomizedSearchCV(xgb, param_distributions=param_grid, n_iter=n_iter, cv=cv, scoring='f1')
+
+    # Fit the RandomizedSearchCV object to the training data
+    randomized_search.fit(X, y)
+
+    # Get the best parameters and the best F1 score
+    best_params = randomized_search.best_params_
+    best_score = randomized_search.best_score_
+
+    # Make predictions on the test set using the best model
+    y_pred = randomized_search.predict(X)
+
+    # Calculate the F1 score on the test set
+    f1 = f1_score(y, y_pred)
+
+    return best_params, best_score, f1
+def main():
     # features = ['pay_now', 'hotel_id', 'language', 'hotel_star_rating',"distance_booking_checkin"]
 
     # preprocessing
     X, y = pp.preprocess(df)
     features = X.select_dtypes(include=['float64', 'int64','boolean']).columns
     X = X[features]
-    # print(X.columns)
-    # print(X.shape)
+
+    # model_selection(classifiers,names, params, X, y)
+    param_grid = {
+        'max_depth': [10],
+        'learning_rate': [0.04],
+        'n_estimators': [100],
+        'gamma': [0.2],
+        'subsample': [0.8],
+        'colsample_bytree': [0.8],
+        'reg_alpha': [0.5],
+        'reg_lambda': [0.5],
+    }
+    best_params, best_score, f1 = find_best_params_xgboost(X,y,param_grid)
+    print("best params: ", best_params)
+    print("best score: ", best_score)
+    print("F1: ", f1)
+
+
+if __name__ == '__main__':
+    df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
+    main()
+
+
+
     # run_baseline(X, y)
-    # # run_lightGBN(X, y)
+    # run_lightGBN(X, y)
     # ------------------------------
-    classifiers = [LogisticRegression(),
-              KNeighborsClassifier(),
-              RandomForestClassifier()]
-    names = ["Logistic Regression" ,"KNN", "Random Forest"]
-    scoring = ['accuracy', 'precision_macro', 'recall_macro', 'f1_macro']
+    # classifiers = [LogisticRegression(), KNeighborsClassifier(),RandomForestClassifier()]
+    # names = ["Logistic Regression", "KNN", "Random Forest"]
+    # scoring = ['accuracy', 'precision_macro', 'recall_macro', 'f1_macro']
     # evaluate_different_models_cv(classfiers,names,scoring)
 
-    logreg_param_grid = {
-        'C': [0.1, 1.0, 10.0],
-        'penalty': ['l1', 'l2'],
-        'solver': ['liblinear', 'saga']
-    }
+    # logreg_param_grid = {
+    #     'C': [0.1, 1.0, 10.0],
+    #     'penalty': ['l1', 'l2'],
+    #     'solver': ['liblinear', 'saga']
+    # }
 
-    knn_param_grid = {
-        'n_neighbors': [3, 5, 7],
-        'weights': ['uniform', 'distance'],
-        'p': [1, 2]
-    }
-
-    rf_grid = {
-        'n_estimators': [50, 100, 200, 300],
-        'criterion': ['gini', 'entropy'],
-        'max_depth': [None, 5, 10, 20],
-        'min_samples_split': [2, 5, 10],
-        'min_samples_leaf': [1, 2, 4],
-        'max_features': ['sqrt', 'log2', None],
-        'class_weight': [None, 'balanced'],
-        'max_samples': [None, 0.5, 0.8]
-    }
-    params = [logreg_param_grid,knn_param_grid, rf_grid]
-    model_selection(classifiers,names, params, X, y)
+    # knn_param_grid = {
+    #     'n_neighbors': [3, 5, 7],
+    #     'weights': ['uniform', 'distance'],
+    #     'p': [1, 2]
+    # }
+    #
+    # rf_grid = {
+    #     'n_estimators': [100],
+    #     'criterion': ['gini'],
+    #     'max_depth': [5],
+    #     'min_samples_split': [2],
+    #     'min_samples_leaf': [1],
+    #     'max_features': ['sqrt'],
+    #     'class_weight': ['balanced'],
+    # }
+    # params = [logreg_param_grid,knn_param_grid, rf_grid]
