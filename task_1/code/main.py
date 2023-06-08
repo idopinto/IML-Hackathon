@@ -3,7 +3,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from hackathon_code.Base import baseline
 import pandas as pd
 from task_1.code.hackathon_code.Utils import utils, pp
-from hackathon_code.models import model
+# from hackathon_code.models import model
 
 
 import lightgbm as lgb
@@ -41,13 +41,19 @@ if __name__ == '__main__':
               RandomForestClassifier(n_estimators=100, random_state=42)]
     names = ["Logistic Regression", "KNN", "Random Forest"]
     f1_scores = []
+    precisions = []
+    recalls = []
     for i, model in enumerate(models):
         model.fit(X, y)
         y_pred = model.predict(X)
-        accuracy = accuracy_score(y, y_pred)
         f1_scores.append(f1_score(y, y_pred))
+        precisions.append(precision_score(y,y_pred))
+        recalls.append(recall_score(y,y_pred))
+
         print(f"{names[i]} Results")
-        print("\tAccuracy: ", accuracy)
+        print("\tPrecision: ", precisions[i])
+        print("\tRecall: ", recalls[i])
+
         print("\tF1 Score: ", f1_scores[i])
         print("--------------------------------------")
 
