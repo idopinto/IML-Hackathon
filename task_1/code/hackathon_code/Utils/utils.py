@@ -34,3 +34,48 @@ def pipeline(X,y):
     return f1, precision, recall
 
 
+from datetime import datetime
+
+def cancellation_cost(cancellation_policy, cancellation_date, checkin_date, order_cost, num_nights):
+    cancellation_date = datetime.strptime(cancellation_date, "%Y-%m-%d")
+    checkin_date = datetime.strptime(checkin_date, "%Y-%m-%d")
+    days_until_checkin = (checkin_date - cancellation_date).days
+    cost_per_night = order_cost / num_nights
+
+    policies = cancellation_policy.split("_")
+    no_show_policy = None
+
+    to_return = 0
+
+    for policy in policies:
+        if "P" not in policy and "N" not in policy:
+            raise ValueError("Invalid cancellation policy")
+        if "D" not in policy:
+            policy_type = policy[-1]  # Get the last character of policy, which is 'N' or 'P'
+            charge = int(policy.split(policy_type)[0].split(' ')[-1])  # Get the charge value before 'N' or 'P'
+            no_show_policy = (policy_type, charge)
+            continue
+
+        days, charge, policy_type = policy.split('D')[0], policy.split('D')[1][:-1], policy.split('D')[1][-1]
+        days = int(days)
+        charge = int(charge)
+
+        if days_until_checkin <= days:
+            if policy_type == 'N':
+                to_return = charge * cost_per_night
+            else:  # policy_type == 'P'
+                to_return = (charge / 100) * order_cost
+
+    if days_until_checkin <= 0 and no_show_policy is not None:
+        policy_type, charge = no_show_policy
+        if policy_type == 'N':
+            return charge * cost_per_night
+        else:  # policy_type == 'P'
+            return (charge / 100) * order_cost
+
+    return to_return
+
+
+
+
+
