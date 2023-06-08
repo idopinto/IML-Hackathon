@@ -14,3 +14,4 @@ def preprocess(df):
     y = df["did_cancel"]
     df = df.drop(["h_booking_id", "did_cancel", "h_customer_id"], axis=1)
     return df, y
+
