@@ -98,3 +98,4 @@ if __name__ == '__main__':
     plt.ylabel('Percentage of True labels')
     plt.title("pay_now")
     plt.savefig("pay_now_fig.png")
+
