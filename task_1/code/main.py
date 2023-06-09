@@ -10,12 +10,22 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, cross_val_
 import xgboost as xgb
 
 import lightgbm as lgb
-from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, mean_squared_error, make_scorer
+from sklearn.ensemble import RandomForestRegressor
 
 
+# X_test2, y_test2, z_test2 = pp.preprocess_q2(utils.load_data("hackathon_code/Datasets/test_set_agoda.csv"))
+# y_pred2 = xgb2.predict(X_test2)
+# y_pred3 = LR.predict(X_test2)
+# y_pred3 = np.abs(y_pred3)
+# y_pred3 = np.where(y_pred2 == 0, -1, y_pred3)
+# # y_test2 = np.where(z_test2 == 0, -1, y_test2)
+# #
+# rmse = np.sqrt(mean_squared_error(y_test2, y_pred3))
+# print("RMSE: ", rmse)
 def evaluate_different_models_cv(X, y, classifiers, names, scoring):
     f1_results = []
     for i, classifier in enumerate(classifiers):
@@ -137,115 +147,19 @@ def run_lightGBM(clf, X_train, y_train, X_test, y_test, params):
     print_result("Test Results", y_test, y_pred_binary)
 
 
-def predict_cancellation():
-    train_df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
-    test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
-    X_train, y_train = pp.preprocess_q1(train_df)
-
-    features_to_drop = ["booking_datetime", "no_of_adults",
-                        "origin_country_code", "original_selling_amount", 'h_booking_id', 'hotel_live_date'
-                        ]
-
-    # empirically useful features: percentage_cancellation_2, "checkout_date", 'request_earlycheckin', 'hotel_id'
-
-    # empirically useless features: , "hotel_id", "original_selling_amount"
-
-    # empirically useful to drop: "booking_datetime", h_booking_id, "origin_country_code", "no_of_adults"
-
-    X_train = X_train.drop(features_to_drop, axis=1)
-
-    X_test, y_test = pp.preprocess_q1(test_df)
-
-    X_test = X_test.drop(features_to_drop, axis=1)
-
-    params = {
-        'max_depth': 7,
-        'learning_rate': 0.1,
-        'n_estimators': 300,
-        'gamma': 0.2,
-        'subsample': 1.0,
-        'colsample_bytree': 1.0,
-        'reg_alpha': 0.5,
-        'reg_lambda': 0
-    }
-    clf = XGBClassifier(**params)
-    clf.fit(X_train, y_train)
-    y_pred = clf.predict(X_test)
-    print_result("Test Results", y_test, y_pred)
-
-    # Create a new DataFrame with 'id' and 'cancellation' columns
-    df = pd.DataFrame({'id': test_df['h_booking_id'], 'cancellation': y_pred})
-    # Export the DataFrame to a CSV file
-    df.to_csv('agoda_cancellation_prediction.csv', index=False)
 
     # print(clf.feature_importances_)
     # print(len(clf.feature_importances_))
     # print(np.argmax(np.array(clf.feature_importances_)))
-    features = np.array(X_train.columns).reshape((-1, 1))
-    feature_and_importance = np.concatenate((features, np.array(clf.feature_importances_).reshape(-1, 1)), axis=1)
-    print(feature_and_importance[np.argsort(np.array(clf.feature_importances_))])
-
-
-def rmse_score(y_true, y_pred):
-    mse = mean_squared_error(y_true, y_pred)
-    rmse = np.sqrt(mse)
-    return rmse
-
-
-def predict_selling_amount():
-    train_df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
-    test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
-    features = ["amount_guests", "amount_nights", "hotel_star_rating",
-                "distance_booking_checkin", "booking_datetime", "hotel_country_code"]
-    X_train, y_train = pp.preprocess_q2(train_df)
-    X_train, y_train = X_train[features], train_df['original_selling_amount']
-    X_test, y_test = pp.preprocess_q2(test_df)
-    X_test, y_test = X_test[features], test_df['original_selling_amount']
-
-    from sklearn.linear_model import LinearRegression
-    # from sklearn.linear_model import Ridge, Lasso
-
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_train)
-    print(y_pred)
-    rmse = np.sqrt(mean_squared_error(y_train, y_pred))
-    print("LS RMSE: ", rmse)
-    print("-----------------------------------------------------")
-
-    # y_test_pred = model.predict(X_test)
-    # # print(y_test_pred)
-    # rmse = np.sqrt(mean_squared_error(y_test_pred, y_test))
-    # np_y_test_pred = np.array(y_test_pred).reshape((-1, 1))
-    # np_y_test = np.array(y_test).reshape((-1, 1))
-    # compare = np.concatenate((np_y_test_pred, np_y_test), axis=1)
-    # # y_test_pred['real_value'] = y_test
-    # compare = np.abs(compare[:, 0] - compare[:, 1])
-    # print(np.mean(compare))
-    # print(compare.shape)
-    # print("LS RMSE: ", rmse)
-    # print("-----------------------------------------------------")
-
-    # cv_scores = cross_val_score(Ridge(alpha=0.01), X_train, y_train, cv=5, scoring=make_scorer(rmse_score))
-    # # Print the cross-validation scores
-    # print("Cross-validation scores:", cv_scores)
-    # print("RIDGE Mean CV score:", cv_scores.mean())
-    #
-    # cv_scores = cross_val_score(Lasso(alpha=0.01), X_train, y_train, cv=5, scoring=make_scorer(rmse_score))
-    #
-    # # Print the cross-validation scores
-    # print("Cross-validation scores:", cv_scores)
-    # print("LASSO Mean CV score:", cv_scores.mean())
-
+    # features = np.array(X_train.columns).reshape((-1, 1))
+    # feature_and_importance = np.concatenate((features, np.array(clf.feature_importances_).reshape(-1, 1)), axis=1)
+    # print(feature_and_importance[np.argsort(np.array(clf.feature_importances_))])
 
 if __name__ == '__main__':
     # Block 1 - Load Data & Preprocessing
-    features = ["amount_guests", "amount_nights", "hotel_star_rating",
-                "distance_booking_checkin", "booking_datetime", "hotel_country_code"]
     train_df = utils.load_data("hackathon_code/Datasets/train_set_agoda.csv")
     test_df = utils.load_data("hackathon_code/Datasets/test_set_agoda.csv")
     X_train, y_train = pp.preprocess_q1(train_df) # y = cancellation date
-    # X_train2, y_train2 = X_train, train_df['original_selling_amount']
     X_test, y_test = pp.preprocess_q1(test_df)
 
     params = {
@@ -258,30 +172,43 @@ if __name__ == '__main__':
         'reg_alpha': 0.5,
         'reg_lambda': 0
     }
-    xgb= XGBClassifier(**params)
-    xgb.fit(X_train, y_train)
 
-    # xgb2 = XGBClassifier(**params)
-    # xgb2.fit(X_train["price_per_guest_per_night"], y_train)
+    # train XGBoost for task 1
+    xgb1 = XGBClassifier(**params)
+    xgb1.fit(X_train, y_train)
 
-    ls = LinearRegression()
-    ls.fit(X_train, train_df['original_selling_amount'])
+    # preprocess for task 2
+    X_train2, y_train2, z_train2 = pp.preprocess_q2(utils.load_data("hackathon_code/Datasets/train_set_agoda.csv"))
+
+    # train XGBoost for task 2
+    xgb2 = XGBClassifier(**params)
+    xgb2.fit(X_train2, z_train2)
+
+    RF = RandomForestRegressor()
+    RF.fit(X_train2, y_train2)
+
     # Block 2 - Loading Test Sets for each task
+
+    # Task 1
     test_df1 = utils.load_data("C:/Users/idop8/Desktop/My Files/PyCharmProjects/IML-Hackathon/AgodaCancellationChallenge/Agoda_Test_1.csv",
                                cancel=False)
+
     test1_p = pp.preprocess_q1(test_df1, False)
-    y_pred1 = xgb.predict(test1_p)
+    y_pred1 = xgb1.predict(test1_p)
     res1 = pd.DataFrame({'id': test_df1['h_booking_id'], 'cancellation': y_pred1})
         # .to_csv('agoda_cancellation_prediction.csv', index=False)
+    # ------------------------------------------------------------
+    # task 2
+    test_df2 = utils.load_data("C:/Users/idop8/Desktop/My Files/PyCharmProjects/IML-Hackathon/AgodaCancellationChallenge/Agoda_Test_2.csv",
+                               cancel= False)
 
-    test_df2 = utils.load_data("C:/Users/idop8/Desktop/My Files/PyCharmProjects/IML-Hackathon/AgodaCancellationChallenge/Agoda_Test_2.csv", cancel= False)
+    test2_p = pp.preprocess_q2(test_df2, train=False)
+    y_pred_cancel_date = xgb2.predict(test2_p)
+    y_pred_sell_amount = RF.predict(test2_p)
+    y_pred_sell_amount = np.abs(y_pred_sell_amount)
+    y_pred_sell_amount = np.where(y_pred_cancel_date == 0, -1, y_pred_sell_amount)
 
-    test2_p = pp.preprocess_q1(test_df2, cancel=False, sell_amount=False)
-    y_pred2 = xgb.predict(test2_p)
-    y_pred3 = ls.predict(test2_p)
-    y_pred3 = np.where(condition=(y_pred2 == 0), x=-1, y=y_pred3)
-    # rmse = np.sqrt(mean_squared_error(y_test, y_pred3))
-    # print("RMSE: ", rmse)
-    pd.DataFrame({'id': test_df2['h_booking_id'], 'predicted_selling_amount': y_pred3}) \
-        .to_csv('agoda_cost_of_cancellation.csv', index=False)
-    # Block 3 - question 3 & 4 + plots in pdf
+    pd.DataFrame({'id': test_df2['h_booking_id'], 'predicted_selling_amount': y_pred_sell_amount}) \
+        .to_csv('../predictions/agoda_cost_of_cancellation.csv', index=False)
+    # Block 3 - question 3 & 4 + plots in pdf'
+

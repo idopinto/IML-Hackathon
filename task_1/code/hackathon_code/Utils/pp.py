@@ -39,11 +39,10 @@ def preprocess_q1(df, train=True, q2=False):
 
     if train:
         df["did_cancel"] = ~df["cancellation_datetime"].isna()
-
     df["distance_booking_checkin"] = ((df["checkin_date"] - df["booking_datetime"]) / pd.Timedelta(days=1)).astype(
         float)
-    df["amount_guests"] = df["no_of_adults"] + df["no_of_children"]
     df["hotel_live_date"] = ((df["checkin_date"] - df["hotel_live_date"]) / pd.Timedelta(days=1)).astype(float)
+    df["amount_guests"] = df["no_of_adults"] + df["no_of_children"]
     df["checkin_date"] = df["checkin_date"].dt.dayofyear
     df["checkout_date"] = df["checkout_date"].dt.dayofyear
     df["booking_datetime"] = df["booking_datetime"].dt.dayofyear
@@ -65,17 +64,18 @@ def preprocess_q1(df, train=True, q2=False):
         y = df["did_cancel"]
         df = df.drop(["did_cancel", "h_customer_id", "cancellation_datetime",
                       "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
+        if q2:
+            z = df["original_selling_amount"]
+            df = df.drop(["original_selling_amount"], axis=1)
+            return df, z, y
         return df, y
     else:
         df = df.drop(["h_customer_id", "hotel_brand_code", "hotel_chain_code", "charge_option"], axis=1)
         return df
 
 
-def preprocess_q2(df, train=True):
+def preprocess_q2(X, train=True):
     if train:
-        X, y = preprocess_q1(df, q2=True)
-        y = X["original_selling_amount"]
-        X = X.drop(["original_selling_amount"], axis=1)
-        return X, y
+        return preprocess_q1(X, q2=True)
     else:
-        return preprocess_q1(df, train=train)
+        return preprocess_q1(X, train=False, q2=True)
