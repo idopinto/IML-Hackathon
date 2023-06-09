@@ -1,24 +1,24 @@
-from sklearn.ensemble import RandomForestClassifier
-from ydata_profiling import ProfileReport
 
-from ..Base import baseline
+from Base import baseline
 import pandas as pd
-from sklearn.metrics import precision_score, recall_score
-from sklearn.metrics import f1_score
 
 
-def load_data(filename):
-    dates_to_parse = ["booking_datetime", "checkin_date",
+def load_data(filename, cancel=True):
+    if cancel:
+        dates_to_parse = ["booking_datetime", "checkin_date",
                        "checkout_date", "hotel_live_date", "cancellation_datetime"]
+    else:
+        dates_to_parse = ["booking_datetime", "checkin_date",
+                       "checkout_date", "hotel_live_date"]
     df = pd.read_csv(filename, parse_dates=dates_to_parse)
     return df
 
-def make_report(filename, title):
-    df = load_data(filename)
-    X, y = preprocess(df)
-    X['is_cancel'] = y
-    ProfileReport(X, title=title).to_file(title + ".html")
-    print("--------------------DONE--------------------")
+# def make_report(filename, title):
+#     df = load_data(filename)
+#     X, y = pp.preprocess_q1(df)
+#     X['is_cancel'] = y
+#     ProfileReport(X, title=title).to_file(title + ".html")
+#     print("--------------------DONE--------------------")
 
 def pipeline(X,y):
     # fit
@@ -106,3 +106,103 @@ def parse_policy(policy_code, num_nights):
 
     return parsed_policy
 
+
+# def run_XGBoost(X_train, y_train, X_test, y_test):
+#     params = {
+#         'max_depth': 7,
+#         'learning_rate': 0.1,
+#         'n_estimators': 300,
+#         'gamma': 0.2,
+#         'subsample': 1.0,
+#         'colsample_bytree': 1.0,
+#         'reg_alpha': 0.5,
+#         'reg_lambda': 0
+#     }
+#     clf = XGBClassifier(**params)
+#     clf.fit(X_train, y_train)
+#
+#     y_pred = clf.predict(X_test)
+#     print_result("Test Results", y_test, y_pred)
+#     # print(clf.feature_importances_)
+#     # print(len(clf.feature_importances_))
+#     # print(np.argmax(np.array(clf.feature_importances_)))
+#     # print(X_train.columns[np.argmax(np.array(clf.feature_importances_))])
+#     # Create a new DataFrame with 'id' and 'cancellation' columns
+#     # df = pd.DataFrame({'id': id_column, 'cancellation': y_pred})
+#
+#     # Export the DataFrame to a CSV file
+#     # df.to_csv('agoda_cancellation_prediction.csv', index=False)
+#
+#
+# def run_lightGBM(clf, X_train, y_train, X_test, y_test, params):
+#     randomized_search = RandomizedSearchCV(clf, params, scoring='f1', n_iter=10, cv=5)
+#
+#     # Fit the RandomizedSearchCV object to the training data
+#     randomized_search.fit(X_train, y_train)
+#
+#     # Get the best parameters and the best F1 score
+#     best_params = randomized_search.best_params_
+#     best_score = randomized_search.best_score_
+#     print("Train Results:")
+#     print("\tbest params: ", best_params)
+#     print("\tbest score: ", best_score)
+#     # Make predictions on the test set using the best model
+#     y_pred = randomized_search.predict(X_test)
+#     y_pred_binary = [1 if p >= 0.5 else 0 for p in y_pred]  # Convert probabilities to binary predictions
+#     print_result("Test Results", y_test, y_pred_binary)
+
+
+    # print(clf.feature_importances_)
+    # print(len(clf.feature_importances_))
+    # print(np.argmax(np.array(clf.feature_importances_)))
+    # features = np.array(X_train.columns).reshape((-1, 1))
+    # feature_and_importance = np.concatenate((features, np.array(clf.feature_importances_).reshape(-1, 1)), axis=1)
+    # print(feature_and_importance[np.argsort(np.array(clf.feature_importances_))])
+
+    # def evaluate_different_models_cv(X, y, classifiers, names, scoring):
+    #     f1_results = []
+    #     for i, classifier in enumerate(classifiers):
+    #         # Perform cross-validation
+    #         cv_results = cross_validate(classifier, X, y, scoring=scoring, cv=5)
+    #         f1_results.append(cv_results['test_f1_macro'].mean())
+    #         # Extract and print the mean scores
+    #         print(f"{names[i]} Results")
+    #
+    #         # print("\tAccuracy:", cv_results['test_accuracy'].mean())
+    #         # print("\tPrecision:", cv_results['test_precision_macro'].mean())
+    #         # print("\tRecall:", cv_results['test_recall_macro'].mean())
+    #         # print("\tF1 Score:", cv_results['test_f1_macro'].mean())
+    #         # print("--------------------------------------------------")
+    #     best_f1 = np.argmax(np.array(f1_results))
+    #     print("The Best Model is:\n"
+    #           f"\t {names[best_f1]}\n"
+    #           f"\t f1 score: {f1_results[best_f1]}\n")
+    #
+    # def model_selection(models, names, params_grids, X, y, scoring='f1'):
+    #     # GridSearchCV
+    #     for i, model in enumerate(models):
+    #         grid_search = GridSearchCV(model, params_grids[i], cv=5, scoring=scoring)
+    #
+    #         grid_search.fit(X, y)
+    #         # Print the best parameters and the corresponding mean cross-validated score
+    #
+    #         print(f"GridSearchCV for {names[i]}- Best Parameters:", grid_search.best_params_)
+    #         print(f"GridSearchCV for {names[i]} - Best F1 Score:", grid_search.best_score_)
+    #         print("--------------------------------------------")
+    #
+    # def print_result(title, y_test, y_pred):
+    #     print(title)
+    #     print("\tF1: ", f1_score(y_test, y_pred))
+    #     print("\tPrecision: ", precision_score(y_test, y_pred))
+    #     print("\tRecall: ", recall_score(y_test, y_pred))
+
+
+# X_test2, y_test2, z_test2 = pp.preprocess_q2(utils.load_data("hackathon_code/Datasets/test_set_agoda.csv"))
+# y_pred2 = xgb2.predict(X_test2)
+# y_pred3 = LR.predict(X_test2)
+# y_pred3 = np.abs(y_pred3)
+# y_pred3 = np.where(y_pred2 == 0, -1, y_pred3)
+# # y_test2 = np.where(z_test2 == 0, -1, y_test2)
+# #
+# rmse = np.sqrt(mean_squared_error(y_test2, y_pred3))
+# print("RMSE: ", rmse)

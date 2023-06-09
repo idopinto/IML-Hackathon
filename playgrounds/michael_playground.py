@@ -16,7 +16,7 @@ def preprocess(df):
     return df, y
 
 if __name__ == '__main__':
-    filename = "../Datasets/train_set_agoda.csv"
+    filename = "../task_1/code/hackathon_code/Datasets/train_set_agoda.csv"
 
     df = pd.read_csv(filename,
                      parse_dates=["booking_datetime", "checkin_date", "checkout_date", "hotel_live_date",
