@@ -106,4 +106,3 @@ def parse_policy(policy_code, num_nights):
 
     return parsed_policy
 
-
