@@ -12,6 +12,17 @@ def load_data(filename, cancel=True):
                        "checkout_date", "hotel_live_date"]
     df = pd.read_csv(filename, parse_dates=dates_to_parse)
     return df
+def calculate_percentage_and_count(df, feature):
+    # Group by 'days_cancellation_1' column and apply lambda function
+    # to calculate the percentage of 'True' values in 'label' column for each group,
+    # as well as count the total number of labels in each group
+    result = df.groupby(feature)['label'].agg([('y', lambda x: (x==True).mean()), ('count', 'count')])\
+        .reset_index()
+
+    # Rename the columns
+    result.columns = ['x', 'y', 'count']
+
+    return result
 
 # def make_report(filename, title):
 #     df = load_data(filename)
