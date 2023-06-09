@@ -8,7 +8,6 @@ import sys
 
 # Get the command-line arguments
 
-
 if __name__ == '__main__':
     args = sys.argv
 
